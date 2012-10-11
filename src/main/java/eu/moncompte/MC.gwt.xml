@@ -1,0 +1,18 @@
+<module rename-to="MC">
+    <inherits name="com.google.gwt.user.User"/>
+    <inherits name="com.google.gwt.uibinder.UiBinder"/>
+    <inherits name="com.google.gwt.i18n.I18N"/>
+    <inherits name="com.sencha.gxt.ui.GXT"/>
+    <inherits name="com.sencha.gxt.theme.gray.Gray"/>
+    <inherits name="org.jboss.errai.mvp.MVP" />
+
+    <inherits name="org.hibernate.validator.HibernateValidator" />
+    <inherits name="com.sencha.gxt.data.Data"/>
+    <replace-with
+        class="eu.moncompte.client.MCValidatorFactory">
+        <when-type-is class="javax.validation.ValidatorFactory" />
+    </replace-with>
+    <source path="model"/>
+    <source path='client'/>
+    <source path="shared"/>
+</module>
