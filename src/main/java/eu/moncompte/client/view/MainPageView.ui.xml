@@ -1,0 +1,14 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:npui="urn:import:eu.moncompte.client.ui"
+             xmlns:row="urn:import:com.sencha.gxt.widget.core.client.container">
+
+    <g:HTMLPanel>
+        <div ui:field="loadingMessage" style="position:absolute; top:0; left:0; background-color:yellow;">
+            Loading...
+        </div>
+        <npui:MainMenu/>
+        <row:Viewport ui:field="mainContentPanel" enableScroll="false"/>
+    </g:HTMLPanel>
+</ui:UiBinder> 

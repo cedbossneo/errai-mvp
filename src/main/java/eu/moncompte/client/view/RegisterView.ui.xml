@@ -1,0 +1,55 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:container="urn:import:com.sencha.gxt.widget.core.client.container"
+             xmlns:gxt="urn:import:com.sencha.gxt.widget.core.client"
+             xmlns:form="urn:import:com.sencha.gxt.widget.core.client.form"
+             xmlns:button="urn:import:com.sencha.gxt.widget.core.client.button"
+        >
+
+
+    <ui:with type="com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData"
+             field="verticalLayoutData">
+        <ui:attributes width="1" height="-1"/>
+    </ui:with>
+    <ui:with field="msg" type="eu.moncompte.client.MCMessages"></ui:with>
+
+    <container:CenterLayoutContainer>
+        <gxt:FramedPanel headingText="{msg.welcome}" width="320">
+
+            <container:VerticalLayoutContainer>
+                <container:child layoutData="{verticalLayoutData}">
+                    <form:FieldLabel text="{msg.name}">
+                        <form:widget>
+                            <form:TextField allowBlank="false" ui:field="name"/>
+                        </form:widget>
+                    </form:FieldLabel>
+                </container:child>
+                <container:child layoutData="{verticalLayoutData}">
+                    <form:FieldLabel text="{msg.email}">
+                        <form:widget>
+                            <form:TextField allowBlank="false" ui:field="email"/>
+                        </form:widget>
+                    </form:FieldLabel>
+                </container:child>
+                <container:child layoutData="{verticalLayoutData}">
+                    <form:FieldLabel text="{msg.password}">
+                        <form:widget>
+                            <form:PasswordField allowBlank="false" ui:field="password"/>
+                        </form:widget>
+                    </form:FieldLabel>
+                </container:child>
+                <container:child layoutData="{verticalLayoutData}">
+                    <form:FieldLabel text="{msg.phoneNumber}">
+                        <form:widget>
+                            <form:TextField allowBlank="false" ui:field="phoneNumber"/>
+                        </form:widget>
+                    </form:FieldLabel>
+                </container:child>
+            </container:VerticalLayoutContainer>
+
+            <gxt:button>
+                <button:TextButton text="{msg.register}" ui:field="onRegister"/>
+            </gxt:button>
+        </gxt:FramedPanel>
+    </container:CenterLayoutContainer>
+</ui:UiBinder> 
