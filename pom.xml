@@ -213,6 +213,7 @@
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.gwt.xml</include>
+                    <include>**/Errai*.properties</include>
                 </includes>
             </resource>
         </resources>
