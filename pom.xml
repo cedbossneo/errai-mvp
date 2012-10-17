@@ -171,12 +171,6 @@
             <artifactId>gwt-user</artifactId>
             <scope>compile</scope>
         </dependency>
-
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-dev</artifactId>
-            <scope>provided</scope>
-        </dependency>
         <!-- End of Errai dependencies -->
 
 
