@@ -36,4 +36,8 @@ public abstract class Presenter<V extends View> {
     public void prepareFromRequest(PlaceRequest placeRequest) {
         //To change body of created methods use File | Settings | File Templates.
     }
+
+    public void onReveal() {
+        //To change body of created methods use File | Settings | File Templates.
+    }
 }

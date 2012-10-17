@@ -50,6 +50,7 @@ public class PlaceManager implements ValueChangeHandler<String> {
             if (presenter != null) {
                 presenter.prepareFromRequest(new PlaceRequest(token));
                 presenter.go(container);
+                presenter.onReveal();
             }
         }
     }
