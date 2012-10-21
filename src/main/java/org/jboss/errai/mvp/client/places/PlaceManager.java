@@ -47,11 +47,11 @@ public class PlaceManager implements ValueChangeHandler<String> {
                     presenter = bean.getInstance();
                 }
             }
-            if (presenter != null) {
+           /* if (presenter != null) {
                 presenter.prepareFromRequest(new PlaceRequest(token));
                 presenter.go(container);
                 presenter.onReveal();
-            }
+            }*/
         }
     }
 
