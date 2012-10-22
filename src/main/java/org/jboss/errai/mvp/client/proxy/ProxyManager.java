@@ -2,8 +2,8 @@ package org.jboss.errai.mvp.client.proxy;
 
 import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
-import org.jboss.errai.ioc.client.container.IOCBeanDef;
 import org.jboss.errai.ioc.client.container.IOCBeanManager;
+import org.jboss.errai.mvp.client.events.NotifyingAsyncCallback;
 import org.jboss.errai.mvp.client.presenters.Presenter;
 
 import javax.annotation.PostConstruct;
@@ -31,8 +31,11 @@ public class ProxyManager {
         instance = this;
     }
 
-    public static <T extends Presenter<?>> T getPresenter(Class<T> persenterClass){
+    public static <T extends Presenter<?>> void getPresenter(Class<T> persenterClass, NotifyingAsyncCallback<T> notifyingAsyncCallback){
         T bean = instance.manager.lookupBean(persenterClass).getInstance();
-        return bean;
+        if (bean == null)
+            notifyingAsyncCallback.onFailure(new Throwable());
+        else
+            notifyingAsyncCallback.onSuccess(bean);
     }
 }

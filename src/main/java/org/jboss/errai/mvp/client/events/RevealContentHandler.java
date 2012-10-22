@@ -19,6 +19,7 @@ package org.jboss.errai.mvp.client.events;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.user.client.Command;
+import com.google.web.bindery.event.shared.EventBus;
 import org.jboss.errai.mvp.client.presenters.Presenter;
 import org.jboss.errai.mvp.client.proxy.ProxyManager;
 
@@ -34,9 +35,11 @@ import org.jboss.errai.mvp.client.proxy.ProxyManager;
  */
 public class RevealContentHandler<T extends Presenter<?>> implements EventHandler {
 
+    private EventBus eventBus;
     private Class<T> presenterClass;
 
-    public RevealContentHandler(Class<T> presenterClass) {
+    public RevealContentHandler(EventBus eventBus, Class<T> presenterClass) {
+        this.eventBus = eventBus;
         this.presenterClass = presenterClass;
     }
 
@@ -47,7 +50,7 @@ public class RevealContentHandler<T extends Presenter<?>> implements EventHandle
    *          bet set as content.
    */
   public final void onRevealContent(final RevealContentEvent revealContentEvent) {
-      ProxyManager.getPresenter(presenterClass, new NotifyingAsyncCallback<T>(){
+      ProxyManager.getPresenter(presenterClass, new NotifyingAsyncCallback<T>(eventBus){
 
           @Override
           protected void success(final T presenter) {
