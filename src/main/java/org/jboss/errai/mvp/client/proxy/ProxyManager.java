@@ -85,10 +85,6 @@ public class ProxyManager implements HasHandlers {
                         }
                     }
                 });
-        for (Place place : places.keySet()){
-            RevealContentHandler rch = new RevealContentHandler(eventBus, places.get(place));
-            eventBus.
-        }
     }
 
     private Place getPlace(PlaceRequest request) {

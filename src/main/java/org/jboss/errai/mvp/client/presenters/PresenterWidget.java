@@ -24,6 +24,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import org.jboss.errai.mvp.client.events.ResetPresentersEvent;
+import org.jboss.errai.mvp.client.events.RevealContentEvent;
+import org.jboss.errai.mvp.client.events.RevealContentHandler;
 import org.jboss.errai.mvp.client.views.View;
 
 import java.util.ArrayList;
@@ -108,7 +110,7 @@ import java.util.Map;
  * @author Denis Labaye
  */
 public abstract class PresenterWidget<V extends View>
-     implements HasHandlers, HasSlots {
+     implements HasHandlers, HasSlots{
   private final EventBus eventBus;
   private final V view;
 
@@ -168,7 +170,7 @@ public abstract class PresenterWidget<V extends View>
     }
   }
 
-  @Override
+    @Override
   public final void clearSlot(Object slot) {
     List<PresenterWidget<?>> slotChildren = activeChildren.get(slot);
     if (slotChildren != null) {
