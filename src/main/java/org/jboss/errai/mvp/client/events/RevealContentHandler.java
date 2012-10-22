@@ -38,8 +38,7 @@ public class RevealContentHandler<T extends Presenter<?>> implements EventHandle
     private EventBus eventBus;
     private Class<T> presenterClass;
 
-    public RevealContentHandler(EventBus eventBus, Class<T> presenterClass) {
-        this.eventBus = eventBus;
+    public RevealContentHandler(Class<T> presenterClass) {
         this.presenterClass = presenterClass;
     }
 
@@ -66,4 +65,7 @@ public class RevealContentHandler<T extends Presenter<?>> implements EventHandle
       });
   }
 
+    public void setEventBus(EventBus eventBus) {
+        this.eventBus = eventBus;
+    }
 }

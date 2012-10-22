@@ -1,16 +1,13 @@
 package org.jboss.errai.mvp.rebind.ioc;
 
 import org.jboss.errai.codegen.Statement;
-import org.jboss.errai.codegen.builder.StatementEnd;
-import org.jboss.errai.codegen.builder.VariableReferenceContextualStatementBuilder;
-import org.jboss.errai.codegen.builder.impl.ObjectBuilder;
 import org.jboss.errai.codegen.meta.MetaClass;
-import org.jboss.errai.codegen.util.Refs;
 import org.jboss.errai.codegen.util.Stmt;
 import org.jboss.errai.ioc.client.api.CodeDecorator;
 import org.jboss.errai.ioc.rebind.ioc.extension.IOCDecoratorExtension;
 import org.jboss.errai.ioc.rebind.ioc.injector.api.InjectableInstance;
 import org.jboss.errai.mvp.client.annotations.ContentSlot;
+import org.jboss.errai.mvp.client.events.LazyEventBus;
 import org.jboss.errai.mvp.client.events.RevealContentHandler;
 
 import java.util.Arrays;
@@ -52,13 +49,10 @@ public class ContentSlotIOCExtension extends IOCDecoratorExtension<ContentSlot> 
         final MetaClass revealContentHandler =
                 parameterizedAs(RevealContentHandler.class, typeParametersOf(injectableInstance.getEnclosingType()));
 
-        VariableReferenceContextualStatementBuilder eventBus = Stmt.create().loadVariable("eventBus");
-        // register a destructor to unregister the service when the bean is destroyed.
-        final StatementEnd registerMeth
-                = ObjectBuilder.newInstanceOf(revealContentHandler).withParameters(eventBus, injectableInstance.getEnclosingType());
+        final Statement handler = Stmt.newObject(revealContentHandler, injectableInstance.getEnclosingType().asClass());
 
-        final Statement descrCallback = injectableInstance.callOrBind(injectableInstance("addHandler",
-        Refs.get(injectableInstance.getField().getName()), registerMeth);
+        final Statement descrCallback = Stmt.invokeStatic(LazyEventBus.class, "registerHandler",
+                injectableInstance.getValueStatement(), handler);
 
         return Arrays.asList(descrCallback);
     }

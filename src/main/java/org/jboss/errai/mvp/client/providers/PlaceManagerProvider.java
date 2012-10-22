@@ -1,9 +1,10 @@
-package org.jboss.errai.mvp.client.places;
+package org.jboss.errai.mvp.client.providers;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 import org.jboss.errai.ioc.client.api.IOCProvider;
+import org.jboss.errai.mvp.client.places.PlaceManager;
+import org.jboss.errai.mvp.client.places.PlaceManagerImpl;
+import org.jboss.errai.mvp.client.places.PlaceRequest;
 
 import javax.inject.Provider;
 
@@ -19,20 +20,14 @@ import javax.inject.Provider;
  * Dernière modification
  * Utilisateur: cedric
  * Date: 22/10/12
- * Heure: 12:06
+ * Heure: 18:26
  */
-@Singleton
 @IOCProvider
+@Singleton
 public class PlaceManagerProvider implements Provider<PlaceManager> {
-    @Inject
-    EventBus eventBus;
-
-    @Inject
-    TokenFormatter tokenFormatter;
-
     @Override
     public PlaceManager get() {
-        return new PlaceManagerImpl(eventBus, tokenFormatter) {
+        return new PlaceManagerImpl() {
             @Override
             public void revealDefaultPlace() {
                 revealPlace(new PlaceRequest(""));

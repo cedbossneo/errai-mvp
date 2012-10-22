@@ -99,7 +99,7 @@ public class GetPlaceTitleEvent extends GwtEvent<GetPlaceTitleHandler> {
   }
 
   /**
-   * Indicates that the event was handled and that other handlers should not
+   * Indicates that the event was handled and that other contentHandlers should not
    * process it.
    */
   public void setHandled() {

@@ -24,10 +24,12 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
+import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import org.jboss.errai.mvp.client.events.*;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,23 +42,22 @@ import java.util.List;
 public abstract class PlaceManagerImpl implements PlaceManager,
     ValueChangeHandler<String>, ClosingHandler {
 
-  private final EventBus eventBus;
+  @Inject
+  private EventBus eventBus;
   private String currentHistoryToken = "";
 
   private boolean internalError;
   private String onLeaveQuestion;
   private List<PlaceRequest> placeHierarchy = new ArrayList<PlaceRequest>();
 
-  private final TokenFormatter tokenFormatter;
+    @Inject
+  private TokenFormatter tokenFormatter;
 
   private HandlerRegistration windowClosingHandlerRegistration;
   private boolean locked;
   private Command defferedNavigation;
 
-  public PlaceManagerImpl(EventBus eventBus, TokenFormatter tokenFormatter) {
-    this.eventBus = eventBus;
-    this.tokenFormatter = tokenFormatter;
-    registerTowardsHistory();
+  public PlaceManagerImpl() {
   }
 
   @Override
@@ -302,6 +303,7 @@ public abstract class PlaceManagerImpl implements PlaceManager,
     event.setMessage(onLeaveQuestion);
   }
 
+    @PostConstruct
   void registerTowardsHistory() {
     History.addValueChangeHandler(this);
   }

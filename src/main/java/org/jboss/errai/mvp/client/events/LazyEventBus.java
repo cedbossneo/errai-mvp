@@ -5,9 +5,11 @@
 
 package org.jboss.errai.mvp.client.events;
 
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.SimpleEventBus;
-import org.jboss.errai.ioc.client.container.IOCBeanManager;
+import org.jboss.errai.ioc.client.api.AfterInitialization;
+import org.jboss.errai.mvp.client.proxy.ProxyManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,16 +24,21 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class LazyEventBus extends SimpleEventBus{
-    private IOCBeanManager manager;
-
+    static final Map<GwtEvent.Type, RevealContentHandler> contentHandlers = new HashMap<GwtEvent.Type, RevealContentHandler>();
     static final Map<Class<? extends Event>, List<Class>> events = new HashMap<Class<? extends Event>, List<Class>>();
     static final Map<Class<? extends Event>, List<Class>> handled = new HashMap<Class<? extends Event>, List<Class>>();
 
     public LazyEventBus() {
+        super();
     }
 
-    public void setManager(IOCBeanManager manager) {
-        this.manager = manager;
+    @AfterInitialization
+    private void registerHandlers() {
+        for (GwtEvent.Type type : contentHandlers.keySet()){
+            RevealContentHandler handler = contentHandlers.get(type);
+            handler.setEventBus(this);
+            addHandler(type, handler);
+        }
     }
 
     @Override
@@ -40,18 +47,22 @@ public class LazyEventBus extends SimpleEventBus{
         super.fireEvent(event);
     }
 
-    private void prepareHandler(Event<?> event, Object source) {
-        Class<? extends Event> key = event.getClass();
+    private void prepareHandler(final Event<?> event, final Object source) {
+        final Class<? extends Event> key = event.getClass();
         if (events.containsKey(key)){
-            for (Class klass : events.get(key)){
-                Object instance = manager.lookupBean(klass).getInstance();
-                if (!handled.containsKey(key) || !handled.get(key).contains(klass)){
-                    if (source == null)
-                        addHandler((Event.Type<Object>) event.getAssociatedType(), instance);
-                    else
-                        addHandlerToSource((Event.Type<Object>) event.getAssociatedType(), source, instance);
-                    addToMap(handled, key, klass);
-                }
+            for (final Class klass : events.get(key)){
+                ProxyManager.getPresenter(klass, new NotifyingAsyncCallback(this) {
+                    @Override
+                    protected void success(Object result) {
+                        if (!handled.containsKey(key) || !handled.get(key).contains(klass)){
+                            if (source == null)
+                                addHandler((Event.Type<Object>) event.getAssociatedType(), result);
+                            else
+                                addHandlerToSource((Event.Type<Object>) event.getAssociatedType(), source, result);
+                            addToMap(handled, key, klass);
+                        }
+                    }
+                });
             }
         }
     }
@@ -81,5 +92,9 @@ public class LazyEventBus extends SimpleEventBus{
             if (klasses.contains(klass))
                 klasses.remove(klass);
         }
+    }
+
+    public static void registerHandler(GwtEvent.Type type, RevealContentHandler handler){
+        contentHandlers.put(type, handler);
     }
 }
