@@ -298,24 +298,6 @@ public abstract class PresenterWidget<V extends View>
   }
 
   /**
-   * Registers an event handler towards the {@link com.google.web.bindery.event.shared.EventBus} and
-   * registers it to be automatically removed when {@link #unbind()}
-   * is called. This is usually the desired behavior, but if you
-   * want to unregister handlers manually use {@link #addHandler}
-   * instead.
-   *
-   * @see #addHandler(com.google.gwt.event.shared.GwtEvent.Type, com.google.gwt.event.shared.EventHandler)
-   *
-   * @param <H> The handler type.
-   * @param type See {@link com.google.gwt.event.shared.GwtEvent.Type}.
-   * @param handler The handler to register.
-   */
-  protected final <H extends EventHandler> void addRegisteredHandler(
-      Type<H> type, H handler) {
-    //registerHandler(addHandler(type, handler));
-  }
-
-  /**
    * Registers an event handler towards the {@link com.google.web.bindery.event.shared.EventBus}.
    * Use this only in the rare situations where you want to manually
    * control when the handler is unregistered, otherwise call
