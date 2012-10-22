@@ -24,8 +24,13 @@ import javax.inject.Provider;
 @IOCProvider
 @Singleton
 public class EventBusProvider implements Provider<EventBus> {
+
+    private LazyEventBus eventBus;
+
     @Override
     public EventBus get() {
-        return new LazyEventBus();
+        if (eventBus == null)
+            eventBus = new LazyEventBus();
+        return eventBus;
     }
 }

@@ -8,7 +8,6 @@ package org.jboss.errai.mvp.client.events;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.SimpleEventBus;
-import org.jboss.errai.ioc.client.api.AfterInitialization;
 import org.jboss.errai.mvp.client.proxy.ProxyManager;
 
 import java.util.ArrayList;
@@ -32,17 +31,18 @@ public class LazyEventBus extends SimpleEventBus{
         super();
     }
 
-    @AfterInitialization
     private void registerHandlers() {
         for (GwtEvent.Type type : contentHandlers.keySet()){
             RevealContentHandler handler = contentHandlers.get(type);
             handler.setEventBus(this);
             addHandler(type, handler);
         }
+        contentHandlers.clear();
     }
 
     @Override
     public void fireEvent(Event<?> event) {
+        registerHandlers();
         prepareHandler(event, null);
         super.fireEvent(event);
     }
@@ -79,6 +79,7 @@ public class LazyEventBus extends SimpleEventBus{
 
     @Override
     public void fireEventFromSource(Event<?> event, Object source) {
+        registerHandlers();
         prepareHandler(event, source);
         super.fireEventFromSource(event, source);
     }
