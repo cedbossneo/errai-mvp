@@ -93,7 +93,7 @@ public class LazyEventBus extends SimpleEventBus{
         }
     }
 
-    public static void registerHandler(GwtEvent.Type type, RevealContentHandler handler){
+    public static void registerProxyHandler(GwtEvent.Type type, RevealContentHandler handler){
         contentHandlers.put(type, handler);
     }
 }

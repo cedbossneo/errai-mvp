@@ -54,7 +54,7 @@ public class ProxyClassIOCExtension implements IOCExtensionConfigurator {
                 MetaClass revealContentHandler =
                         parameterizedAs(RevealContentHandler.class, typeParametersOf(klass));
                 StatementEnd handler = ObjectBuilder.newInstanceOf(revealContentHandler).withParameters(klass.asClass());
-                instanceInitializer.addStatement(Stmt.invokeStatic(LazyEventBus.class, "registerHandler", Stmt.invokeStatic(klass, method.getName()), handler));
+                instanceInitializer.addStatement(Stmt.invokeStatic(LazyEventBus.class, "registerProxyHandler", Stmt.invokeStatic(klass, method.getName()), handler));
             }
         }
     }

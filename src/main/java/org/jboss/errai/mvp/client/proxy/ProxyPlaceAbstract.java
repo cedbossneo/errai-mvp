@@ -1,0 +1,251 @@
+/**
+ * Copyright 2011 ArcBees Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package org.jboss.errai.mvp.client.proxy;
+
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.user.client.Command;
+import com.google.inject.Inject;
+import com.google.web.bindery.event.shared.EventBus;
+import org.jboss.errai.mvp.client.events.*;
+import org.jboss.errai.mvp.client.places.Place;
+import org.jboss.errai.mvp.client.places.PlaceManager;
+import org.jboss.errai.mvp.client.places.PlaceRequest;
+import org.jboss.errai.mvp.client.presenters.Presenter;
+
+/**
+ * A useful mixing class to define a {@link Proxy} that is also a {@link Place}.
+ * You can usually inherit from the simpler form {@link ProxyPlace}.
+ * <p />
+ *
+ * @param <P> The Presenter's type.
+ * @param <Proxy_> Type of the associated {@link Proxy}.
+ *
+ * @author David Peterson
+ * @author Philippe Beaudoin
+ * @author Christian Goudreau
+ */
+public class ProxyPlaceAbstract<P extends Presenter<?>, Proxy_ extends Proxy<P>>
+    implements ProxyPlace<P> {
+
+  protected Place place;
+  protected PlaceManager placeManager;
+  protected Proxy_ proxy;
+
+  private EventBus eventBus;
+
+  /**
+   * Creates a {@link ProxyPlaceAbstract}. That is, the {@link Proxy} of a
+   * {@link Presenter} attached to a {@link Place}. This presenter can be
+   * invoked by setting a history token that matches its name token in the URL
+   * bar.
+   */
+  public ProxyPlaceAbstract(Proxy_ proxy, Place place) {
+      this.proxy = proxy;
+      this.place = place;
+  }
+
+  @Override
+  public boolean canReveal() {
+    return place.canReveal();
+  }
+
+  // /////////////////////
+  // Inherited from Proxy
+
+  @Override
+  public final boolean equals(Object o) {
+    return place.equals(o);
+  }
+
+  @Override
+  public void fireEvent(GwtEvent<?> event) {
+    getEventBus().fireEventFromSource(event, this);
+  }
+
+  @Override
+  public final EventBus getEventBus() {
+    return eventBus;
+  }
+
+  @Override
+  public String getNameToken() {
+    return place.getNameToken();
+  }
+
+  // /////////////////////
+  // Inherited from Place
+
+  @Override
+  public void getPresenter(NotifyingAsyncCallback<P> callback) {
+    proxy.getPresenter(callback);
+  }
+
+  @Override
+  public final int hashCode() {
+    return place.hashCode();
+  }
+
+  @Override
+  public boolean matchesRequest(PlaceRequest request) {
+    return place.matchesRequest(request);
+  }
+
+  // /////////////////////
+  // Protected methods that can be overridden
+
+  @Override
+  public final String toString() {
+    return place.toString();
+  }
+
+  // /////////////////////
+  // Private methods
+
+  /**
+   * Injects the various resources and performs other bindings.
+   * <p />
+   * Never call directly, it should only be called by GIN. Method injection is
+   * used instead of constructor injection, because the latter doesn't work well
+   * with GWT generators.
+   *
+   * @param placeManager The {@link PlaceManager}.
+   * @param eventBus The {@link com.google.web.bindery.event.shared.EventBus}.
+   */
+  protected void bind(final PlaceManager placeManager, EventBus eventBus) {
+    this.eventBus = eventBus;
+    this.placeManager = placeManager;
+    eventBus.addHandler(PlaceRequestInternalEvent.getType(),
+        new PlaceRequestInternalHandler() {
+          @Override
+          public void onPlaceRequest(PlaceRequestInternalEvent event) {
+            if (event.isHandled()) {
+              return;
+            }
+            PlaceRequest request = event.getRequest();
+            if (matchesRequest(request)) {
+              event.setHandled();
+              if (canReveal()) {
+                handleRequest(request, event.shouldUpdateBrowserHistory());
+              } else {
+                event.setUnauthorized();
+              }
+            }
+          }
+        });
+    eventBus.addHandler(GetPlaceTitleEvent.getType(),
+        new GetPlaceTitleHandler() {
+          @Override
+          public void onGetPlaceTitle(GetPlaceTitleEvent event) {
+            if (event.isHandled()) {
+              return;
+            }
+            PlaceRequest request = event.getRequest();
+            if (matchesRequest(request)) {
+              if (canReveal()) {
+                event.setHandled();
+                getPlaceTitle(event);
+              }
+            }
+          }
+        });
+  }
+
+  /**
+   * Obtains the title for this place and invoke the passed handler when the
+   * title is available. By default, places don't have a title and will invoke
+   * the handler with {@code null}, but override this method to provide your own
+   * title.
+   *
+   * @param event The {@link GetPlaceTitleEvent} to invoke once the title is
+   *          available.
+   */
+  protected void getPlaceTitle(GetPlaceTitleEvent event) {
+    event.getHandler().onSetPlaceTitle(null);
+  }
+
+  /**
+   * Prepares the presenter with the information contained in the current
+   * request, then reveals it. Will refuse to reveal the display and do nothing
+   * if {@link #canReveal()} returns <code>false</code>.
+   *
+   * @param request The request to handle. Can pass <code>null</code> if no
+   *          request is used, in which case the presenter will be directly
+   *          revealed.
+   * @param updateBrowserUrl {@code true} If the browser URL should be updated, {@code false}
+   *          otherwise.
+   */
+  private void handleRequest(final PlaceRequest request, final boolean updateBrowserUrl) {
+    proxy.getPresenter(new NotifyingAsyncCallback<P>(eventBus) {
+
+        @Override
+        public void success(final P presenter) {
+            // Everything should be bound before we prepare the presenter from the
+            // request,
+            // in case it wants to fire some events. That's why we will do this in a
+            // deferred command.
+            addDeferredCommand(new Command() {
+                @Override
+                public void execute() {
+                    PlaceRequest originalRequest = placeManager.getCurrentPlaceRequest();
+                    presenter.prepareFromRequest(request);
+                    if (originalRequest == placeManager.getCurrentPlaceRequest()) {
+                        // User did not manually update place request in prepareFromRequest, update it here.
+                        placeManager.updateHistory(request, updateBrowserUrl);
+                    }
+                    NavigationEvent.fire(placeManager, request);
+                    if (!presenter.useManualReveal()) {
+                        // Automatic reveal
+                        manualReveal(presenter);
+                    }
+                }
+            });
+        }
+    });
+  }
+
+  @Override
+  public void manualReveal(Presenter<?> presenter) {
+    // Reveal only if there are no pending navigation requests
+    if (!placeManager.hasPendingNavigation()) {
+      if (!presenter.isVisible()) {
+        // This will trigger a reset in due time
+        presenter.forceReveal();
+      } else {
+        // We have to do the reset ourselves
+        ResetPresentersEvent.fire(this);
+      }
+    }
+    placeManager.unlock();
+  }
+
+  @Override
+  public void manualRevealFailed() {
+    placeManager.unlock();
+  }
+
+    /**
+   * This method allows unit test to handle deferred command with a mechanism that doesn't
+   * require a GWTTestCase.
+   *
+   * @param command The {@Command} to defer, see {@link com.google.gwt.user.client.DeferredCommand}.
+   */
+  void addDeferredCommand(Command command) {
+    Scheduler.get().scheduleDeferred(command);
+  }
+
+}
