@@ -4,7 +4,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.Command;
-import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 import org.jboss.errai.ioc.client.container.IOCBeanDef;
 import org.jboss.errai.ioc.client.container.IOCBeanManager;
@@ -17,6 +16,7 @@ import org.jboss.errai.mvp.client.presenters.Presenter;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 

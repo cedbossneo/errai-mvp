@@ -16,10 +16,12 @@
 
 package org.jboss.errai.mvp.client.presenters;
 
-import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 import org.jboss.errai.mvp.client.places.PlaceRequest;
 import org.jboss.errai.mvp.client.views.View;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * A singleton presenter, the basic building block of the
@@ -127,7 +129,6 @@ import org.jboss.errai.mvp.client.views.View;
  * @author Philippe Beaudoin
  * @author Christian Goudreau
  */
-@Singleton
 public abstract class Presenter<V extends View> extends PresenterWidget<V> {
 
   /**

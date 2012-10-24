@@ -17,7 +17,7 @@
 package org.jboss.errai.mvp.client.places;
 
 import com.google.gwt.http.client.URL;
-import com.google.inject.Inject;
+import javax.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.List;

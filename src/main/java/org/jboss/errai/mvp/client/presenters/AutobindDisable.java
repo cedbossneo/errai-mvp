@@ -16,8 +16,9 @@
 
 package org.jboss.errai.mvp.client.presenters;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * Bind this class to indicate that you wish to globally disable automatic binding in
@@ -38,7 +39,7 @@ public class AutobindDisable {
   private final boolean disable;
 
   @Inject
-  AutobindDisable() {
+  public AutobindDisable() {
     disable = false;
   }
 

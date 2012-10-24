@@ -6,21 +6,17 @@
 package org.jboss.errai.mvp.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 import org.jboss.errai.mvp.client.events.LazyEventBus;
-import org.jboss.errai.mvp.client.events.RevealRootContentEvent;
-import org.jboss.errai.mvp.client.events.RevealRootContentHandler;
 import org.jboss.errai.mvp.client.places.PlaceManager;
 import org.jboss.errai.mvp.client.places.PlaceManagerImpl;
 import org.jboss.errai.mvp.client.places.PlaceRequest;
 import org.jboss.errai.mvp.client.places.TokenFormatter;
 import org.jboss.errai.mvp.client.proxy.ProxyManager;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 
 @ApplicationScoped
 public class MVP {
@@ -50,17 +46,5 @@ public class MVP {
                 }
             };
         return placeManager;
-    }
-
-    @PostConstruct
-    public void bindEvents(){
-        eventBus.addHandler(RevealRootContentEvent.getType(), new RevealRootContentHandler() {
-            @Override
-            public void onRevealRootContent(RevealRootContentEvent event) {
-                RootPanel rootPanel = RootPanel.get();
-                rootPanel.clear();
-                rootPanel.add(event.getContent().getWidget());
-            }
-        });
     }
 }
