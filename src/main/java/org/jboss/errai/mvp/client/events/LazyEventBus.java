@@ -29,6 +29,7 @@ public class LazyEventBus extends SimpleEventBus{
 
     public LazyEventBus() {
         super();
+        registerHandlers();
     }
 
     private void registerHandlers() {
@@ -37,12 +38,10 @@ public class LazyEventBus extends SimpleEventBus{
             handler.setEventBus(this);
             addHandler(type, handler);
         }
-        contentHandlers.clear();
     }
 
     @Override
     public void fireEvent(Event<?> event) {
-        registerHandlers();
         prepareHandler(event, null);
         super.fireEvent(event);
     }
@@ -79,7 +78,6 @@ public class LazyEventBus extends SimpleEventBus{
 
     @Override
     public void fireEventFromSource(Event<?> event, Object source) {
-        registerHandlers();
         prepareHandler(event, source);
         super.fireEventFromSource(event, source);
     }

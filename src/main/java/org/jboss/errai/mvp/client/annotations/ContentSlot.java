@@ -29,6 +29,6 @@ import java.lang.annotation.Target;
  *
  * @author Philippe Beaudoin
  */
-@Target(ElementType.FIELD)
+@Target(ElementType.METHOD)
 public @interface ContentSlot {
 }
