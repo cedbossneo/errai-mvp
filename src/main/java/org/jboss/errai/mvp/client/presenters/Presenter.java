@@ -25,7 +25,7 @@ import org.jboss.errai.mvp.client.views.View;
  * A singleton presenter, the basic building block of the
  * <a href="http://code.google.com/intl/nl/events/io/2009/sessions/GoogleWebToolkitBestPractices.html">
  * model-view-presenter</a> architecture. Each logical page of your application will usually
- * correspond to a singleton {@link Presenter}. If you need to separate logic from view
+ * correspond to a singleton {@link org.jboss.errai.mvp.client.presenters.Presenter}. If you need to separate logic from view
  * in a simple graphical component, you might consider using a {@link PresenterWidget}.
  * <p />
  * For more details on the hierarchical organization of presenters, see {@link PresenterWidget}.
@@ -131,7 +131,7 @@ import org.jboss.errai.mvp.client.views.View;
 public abstract class Presenter<V extends View> extends PresenterWidget<V> {
 
   /**
-   * Creates a {@link Presenter} that is not necessarily using automatic
+   * Creates a {@link org.jboss.errai.mvp.client.presenters.Presenter} that is not necessarily using automatic
    * binding. Automatic binding will only work when instantiating this object using
    * Guice/GIN dependency injection. See
    * {@link HandlerContainerImpl#HandlerContainerImpl(boolean)} for
@@ -142,10 +142,23 @@ public abstract class Presenter<V extends View> extends PresenterWidget<V> {
    * @param view The {@link View}.
    * @param proxy The {@link Proxy}.
    */
-  public Presenter(EventBus eventBus, V view) {
+  public Presenter(boolean autoBind, EventBus eventBus, V view) {
     super(eventBus, view);
   }
 
+  /**
+   * Creates a {@link org.jboss.errai.mvp.client.presenters.Presenter} that uses automatic binding. This will
+   * only work when instantiating this object using Guice/GIN dependency injection.
+   * See {@link HandlerContainerImpl#HandlerContainerImpl()} for more details on
+   * automatic binding.
+   *
+   * @param eventBus The {@link com.google.web.bindery.event.shared.EventBus}.
+   * @param view The {@link View}.
+   * @param proxy The {@link Proxy}.
+   */
+  public Presenter(EventBus eventBus, V view) {
+    super(eventBus, view);
+  }
 
   /**
    * Reveals the presenter, bypassing any service offered by the
@@ -160,7 +173,7 @@ public abstract class Presenter<V extends View> extends PresenterWidget<V> {
    * </ul>
    * Therefore, to reveal a presenter associated to a {@link com.gwtplatform.mvp.client.proxy.ProxyPlace ProxyPlace}
    * use one of the method provided by the {@link com.gwtplatform.mvp.client.proxy.PlaceManager PlaceManager}.
-   * For more details see {@link Presenter}.
+   * For more details see {@link org.jboss.errai.mvp.client.presenters.Presenter}.
    */
   public final void forceReveal() {
     if (isVisible()) {
@@ -184,7 +197,7 @@ public abstract class Presenter<V extends View> extends PresenterWidget<V> {
    * <li> Fetch the data using a {@link com.gwtplatform.mvp.client.proxy.ManualRevealCallback ManualRevealCallback},
    *      which will automatically reveal the presenter upon success.</li>
    * <li> Fetch the data by any other mean and call
-   *      {@link com.gwtplatform.mvp.client.proxy.ProxyPlace#manualReveal(Presenter)} when
+   *      {@link com.gwtplatform.mvp.client.proxy.ProxyPlace#manualReveal(org.jboss.errai.mvp.client.presenters.Presenter)} when
    *      your data is available. In this case you also have to call
    *      {@link com.gwtplatform.mvp.client.proxy.ProxyPlace#manualRevealFailed()}
    *      if loading fails, otherwise your application will become unusable.</li>
@@ -202,7 +215,7 @@ public abstract class Presenter<V extends View> extends PresenterWidget<V> {
    * Prepare the state of the presenter given the information contained in
    * the {@link PlaceRequest}. This method is called when the
    * {@link com.gwtplatform.mvp.client.proxy.PlaceManager PlaceManager} navigates
-   * to this {@link Presenter}. You should override the method to extract any
+   * to this {@link org.jboss.errai.mvp.client.presenters.Presenter}. You should override the method to extract any
    * parameters you need from the request. Make sure you call your parent's
    * {@link #prepareFromRequest} method.
    * <p />
