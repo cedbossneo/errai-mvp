@@ -19,7 +19,6 @@ package org.jboss.errai.mvp.client.proxy;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.Command;
-import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 import org.jboss.errai.mvp.client.events.*;
 import org.jboss.errai.mvp.client.places.Place;
@@ -126,7 +125,7 @@ public class ProxyPlaceAbstract<P extends Presenter<?>, Proxy_ extends Proxy<P>>
    * @param placeManager The {@link PlaceManager}.
    * @param eventBus The {@link com.google.web.bindery.event.shared.EventBus}.
    */
-  protected void bind(final PlaceManager placeManager, EventBus eventBus) {
+  public void bind(final PlaceManager placeManager, EventBus eventBus) {
     this.eventBus = eventBus;
     this.placeManager = placeManager;
     eventBus.addHandler(PlaceRequestInternalEvent.getType(),

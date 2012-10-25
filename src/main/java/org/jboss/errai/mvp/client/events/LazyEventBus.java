@@ -5,9 +5,9 @@
 
 package org.jboss.errai.mvp.client.events;
 
-import com.google.gwt.event.shared.GwtEvent;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.SimpleEventBus;
+import org.jboss.errai.mvp.client.presenters.Presenter;
 import org.jboss.errai.mvp.client.proxy.ProxyManager;
 
 import java.util.ArrayList;
@@ -23,21 +23,11 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class LazyEventBus extends SimpleEventBus{
-    static final Map<GwtEvent.Type, RevealContentHandler> contentHandlers = new HashMap<GwtEvent.Type, RevealContentHandler>();
     static final Map<Class<? extends Event>, List<Class>> events = new HashMap<Class<? extends Event>, List<Class>>();
     static final Map<Class<? extends Event>, List<Class>> handled = new HashMap<Class<? extends Event>, List<Class>>();
 
     public LazyEventBus() {
         super();
-        registerHandlers();
-    }
-
-    private void registerHandlers() {
-        for (GwtEvent.Type type : contentHandlers.keySet()){
-            RevealContentHandler handler = contentHandlers.get(type);
-            handler.setEventBus(this);
-            addHandler(type, handler);
-        }
     }
 
     @Override
@@ -50,9 +40,9 @@ public class LazyEventBus extends SimpleEventBus{
         final Class<? extends Event> key = event.getClass();
         if (events.containsKey(key)){
             for (final Class klass : events.get(key)){
-                ProxyManager.getPresenter(klass, new NotifyingAsyncCallback(this) {
+                ProxyManager.getPresenter(klass, new NotifyingAsyncCallback<Presenter>(this) {
                     @Override
-                    protected void success(Object result) {
+                    protected void success(Presenter result) {
                         if (!handled.containsKey(key) || !handled.get(key).contains(klass)){
                             if (source == null)
                                 addHandler((Event.Type<Object>) event.getAssociatedType(), result);
@@ -91,9 +81,5 @@ public class LazyEventBus extends SimpleEventBus{
             if (klasses.contains(klass))
                 klasses.remove(klass);
         }
-    }
-
-    public static void registerProxyHandler(GwtEvent.Type type, RevealContentHandler handler){
-        contentHandlers.put(type, handler);
     }
 }

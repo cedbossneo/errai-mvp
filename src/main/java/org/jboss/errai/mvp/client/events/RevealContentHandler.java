@@ -21,11 +21,11 @@ import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.user.client.Command;
 import com.google.web.bindery.event.shared.EventBus;
 import org.jboss.errai.mvp.client.presenters.Presenter;
-import org.jboss.errai.mvp.client.proxy.ProxyManager;
+import org.jboss.errai.mvp.client.proxy.ProxyImpl;
 
 /**
  * This is the handler class for {@link RevealContentEvent}. It should be used
- * by any {@link Proxy} class of a {@link Presenter} that accepts child
+ * by any {@link org.jboss.errai.mvp.client.proxy.Proxy} class of a {@link Presenter} that accepts child
  * presenters. When this handler is triggered, the proxy should <b>first</b> set
  * the content appropriately in the presenter, and then reveal the presenter.
  *
@@ -35,37 +35,42 @@ import org.jboss.errai.mvp.client.proxy.ProxyManager;
  */
 public class RevealContentHandler<T extends Presenter<?>> implements EventHandler {
 
-    private EventBus eventBus;
-    private Class<T> presenterClass;
+    private final EventBus eventBus;
+    private final ProxyImpl<T> proxy;
 
-    public RevealContentHandler(Class<T> presenterClass) {
-        this.presenterClass = presenterClass;
-    }
-
-  /**
-   * This is the dispatched method. Reveals
-   *
-   * @param revealContentEvent The event containing the presenter that wants to
-   *          bet set as content.
-   */
-  public final void onRevealContent(final RevealContentEvent revealContentEvent) {
-      ProxyManager.getPresenter(presenterClass, new NotifyingAsyncCallback<T>(eventBus){
-
-          @Override
-          protected void success(final T presenter) {
-              Scheduler.get().scheduleDeferred(new Command() {
-                  @Override
-                  public void execute() {
-                      presenter.forceReveal();
-                      presenter.setInSlot(revealContentEvent.getAssociatedType(),
-                              revealContentEvent.getContent());
-                  }
-              });
-          }
-      });
-  }
-
-    public void setEventBus(EventBus eventBus) {
+    public RevealContentHandler(final EventBus eventBus,
+                                final ProxyImpl<T> proxy) {
         this.eventBus = eventBus;
+        this.proxy = proxy;
     }
+
+    /**
+     * This is the dispatched method. Reveals
+     *
+     * @param revealContentEvent The event containing the presenter that wants to
+     *          bet set as content.
+     */
+    public final void onRevealContent(final RevealContentEvent revealContentEvent) {
+        proxy.getPresenter(new NotifyingAsyncCallback<T>(eventBus) {
+
+            @Override
+            public void success(final T presenter) {
+                // Deferring is needed because the event bus enqueues and delays handler
+                // registration when events are currently being processed.
+                // (see {@link com.google.gwt.event.shared.HandlerManager@addHandler()})
+                // So if a presenter registers a handler in its onBind() method and a
+                // child fires the event in its onReveal() method, then the event might
+                // get lost because the handler is not officially registered yet.
+                Scheduler.get().scheduleDeferred(new Command() {
+                    @Override
+                    public void execute() {
+                        presenter.forceReveal();
+                        presenter.setInSlot(revealContentEvent.getAssociatedType(),
+                                revealContentEvent.getContent());
+                    }
+                });
+            }
+        });
+    }
+
 }
