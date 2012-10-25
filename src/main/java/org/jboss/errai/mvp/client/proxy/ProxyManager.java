@@ -55,7 +55,7 @@ public class ProxyManager {
         defferedHandlers.add(handler);
     }
 
-    public static <P extends Presenter<?>> void registerEvent(Event event, Class<P> presenterClass){
+    public static <P extends Presenter<?>> void registerEvent(Class<? extends Event> event, Class<P> presenterClass){
         DefferedEventImpl<P> defferedEvent = new DefferedEventImpl<P>(event, presenterClass);
         defferedEvents.add(defferedEvent);
     }

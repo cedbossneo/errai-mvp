@@ -8,7 +8,7 @@ package org.jboss.errai.mvp.client.events;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.SimpleEventBus;
 import org.jboss.errai.mvp.client.presenters.Presenter;
-import org.jboss.errai.mvp.client.proxy.ProxyManager;
+import org.jboss.errai.mvp.client.proxy.Proxy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,8 +23,8 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class LazyEventBus extends SimpleEventBus{
-    static final Map<Class<? extends Event>, List<Class>> events = new HashMap<Class<? extends Event>, List<Class>>();
-    static final Map<Class<? extends Event>, List<Class>> handled = new HashMap<Class<? extends Event>, List<Class>>();
+    static final Map<Class<? extends Event>, List<Proxy>> events = new HashMap<Class<? extends Event>, List<Proxy>>();
+    static final Map<Class<? extends Event>, List<Proxy>> handled = new HashMap<Class<? extends Event>, List<Proxy>>();
 
     public LazyEventBus() {
         super();
@@ -39,16 +39,16 @@ public class LazyEventBus extends SimpleEventBus{
     private void prepareHandler(final Event<?> event, final Object source) {
         final Class<? extends Event> key = event.getClass();
         if (events.containsKey(key)){
-            for (final Class klass : events.get(key)){
-                ProxyManager.getPresenter(klass, new NotifyingAsyncCallback<Presenter>(this) {
+            for (final Proxy proxy : events.get(key)){
+                proxy.getPresenter(new NotifyingAsyncCallback<Presenter>(this) {
                     @Override
                     protected void success(Presenter result) {
-                        if (!handled.containsKey(key) || !handled.get(key).contains(klass)){
+                        if (!handled.containsKey(key) || !handled.get(key).contains(proxy)){
                             if (source == null)
                                 addHandler((Event.Type<Object>) event.getAssociatedType(), result);
                             else
                                 addHandlerToSource((Event.Type<Object>) event.getAssociatedType(), source, result);
-                            addToMap(handled, key, klass);
+                            addToMap(handled, key, proxy);
                         }
                     }
                 });
@@ -56,12 +56,12 @@ public class LazyEventBus extends SimpleEventBus{
         }
     }
 
-    private  static void addToMap(Map<Class<? extends Event>, List<Class>> map, Class<? extends Event> event, Class klass) {
+    private  static void addToMap(Map<Class<? extends Event>, List<Proxy>> map, Class<? extends Event> event, Proxy proxy) {
         if (map.containsKey(event)){
-            map.get(event).add(klass);
+            map.get(event).add(proxy);
         }else {
-            ArrayList<Class> classes = new ArrayList<Class>();
-            classes.add(klass);
+            ArrayList<Proxy> classes = new ArrayList<Proxy>();
+            classes.add(proxy);
             map.put(event, classes);
         }
     }
@@ -72,14 +72,14 @@ public class LazyEventBus extends SimpleEventBus{
         super.fireEventFromSource(event, source);
     }
 
-    public static void registerProxyEvent(Class<? extends Event> event, Class klass){
-        addToMap(events, event, klass);
+    public static void registerProxyEvent(Class<? extends Event> event, Proxy proxy){
+        addToMap(events, event, proxy);
     }
 
-    public static void unregisterProxyEvent(Class klass){
-        for (List<Class> klasses : handled.values()){
-            if (klasses.contains(klass))
-                klasses.remove(klass);
+    public static void unregisterProxyEvent(Proxy proxy){
+        for (List<Proxy> klasses : handled.values()){
+            if (klasses.contains(proxy))
+                klasses.remove(proxy);
         }
     }
 }
