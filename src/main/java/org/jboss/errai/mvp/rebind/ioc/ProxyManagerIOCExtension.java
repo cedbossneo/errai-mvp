@@ -7,6 +7,8 @@ package org.jboss.errai.mvp.rebind.ioc;
 
 
 import org.jboss.errai.codegen.BlockStatement;
+import org.jboss.errai.codegen.Parameter;
+import org.jboss.errai.codegen.builder.AnonymousClassStructureBuilder;
 import org.jboss.errai.codegen.builder.StatementEnd;
 import org.jboss.errai.codegen.builder.impl.ObjectBuilder;
 import org.jboss.errai.codegen.meta.MetaClass;
@@ -18,11 +20,14 @@ import org.jboss.errai.ioc.client.api.IOCExtension;
 import org.jboss.errai.ioc.rebind.ioc.bootstrapper.IOCProcessingContext;
 import org.jboss.errai.ioc.rebind.ioc.bootstrapper.IOCProcessorFactory;
 import org.jboss.errai.ioc.rebind.ioc.extension.IOCExtensionConfigurator;
+import org.jboss.errai.ioc.rebind.ioc.injector.InjectUtil;
 import org.jboss.errai.ioc.rebind.ioc.injector.api.InjectionContext;
 import org.jboss.errai.mvp.client.annotations.*;
 import org.jboss.errai.mvp.client.events.LazyEventBus;
+import org.jboss.errai.mvp.client.events.NotifyingAsyncCallback;
 import org.jboss.errai.mvp.client.events.RevealContentHandler;
 import org.jboss.errai.mvp.client.places.Gatekeeper;
+import org.jboss.errai.mvp.client.proxy.ProxyImpl;
 import org.jboss.errai.mvp.client.proxy.ProxyManager;
 
 import java.util.Collection;
@@ -46,11 +51,15 @@ public class ProxyManagerIOCExtension implements IOCExtensionConfigurator {
         final BlockStatement instanceInitializer = context.getBootstrapClass().getInstanceInitializer();
 
         for (MetaClass klass : ClassScanner.getTypesAnnotatedWith(ProxyClass.class)){
-            instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerProxy", klass));
+            AnonymousClassStructureBuilder proxy = createProxy(instanceInitializer, klass);
+            String proxyVarName = klass.getName() + "Proxy";
+            instanceInitializer.addStatement(Stmt.declareVariable(proxyVarName, proxy.finish()));
             for (MetaMethod method : klass.getMethodsAnnotatedWith(ProxyEvent.class)) {
                 MetaParameter event = method.getParameters()[0];
+                createMethod(injectionContext, klass, proxy, method.getReturnType(), method.getName(), event);
                 instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerEvent", event.getType(), klass));
             }
+            instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerProxy", Stmt.loadVariable(proxyVarName), klass));
             for (MetaMethod method : klass.getMethodsAnnotatedWith(ContentSlot.class)) {
                 if (!method.isStatic())
                     continue;
@@ -80,5 +89,40 @@ public class ProxyManagerIOCExtension implements IOCExtensionConfigurator {
             }else
                 instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerPlace", klass.getAnnotation(NameToken.class).value(), klass));
         }
+    }
+
+    private AnonymousClassStructureBuilder createMethod(InjectionContext injectionContext, MetaClass klass, AnonymousClassStructureBuilder proxy, MetaClass returnType, String name, MetaParameter event) {
+        Parameter parameter = Parameter.of(event.getType(), "event", true);
+        MetaClass metaClass = parameterizedAs(NotifyingAsyncCallback.class, typeParametersOf(klass));
+        return proxy.publicMethod(returnType, name, parameter).body()
+                .append(
+                        InjectUtil.invokePublicOrPrivateMethod(injectionContext, Stmt.loadVariable(klass.getName() + "Proxy"),
+                                proxy.getClassDefinition().getBestMatchingMethod("getPresenter", metaClass),
+                                createCallback(metaClass, klass, proxy, name, parameter))
+                ).finish();
+/*        new NotifyingAsyncCallback(){
+
+                    @Override
+                    protected void success(final Presenter presenter) {
+                        Scheduler.get().scheduleDeferred( new Command() {
+
+                            @Override
+                            public void execute() {
+                                presenter.On...(event);
+                            }
+                        });
+                    }
+                })*/
+    }
+
+    private ObjectBuilder createCallback(MetaClass callbackClass, MetaClass presenterKlass, AnonymousClassStructureBuilder proxy, String name, Parameter parameter) {
+        Parameter presenter = Parameter.of(presenterKlass, "presenter", true);
+        return ObjectBuilder.newInstanceOf(callbackClass).extend(Stmt.loadVariable(presenterKlass.getName() + "Proxy").invoke("getEventBus")).publicOverridesMethod("success", presenter).append(Stmt.loadVariable(presenter.getName()).invoke(name, parameter)).finish().finish();
+    }
+
+    private AnonymousClassStructureBuilder createProxy(BlockStatement instanceInitializer, MetaClass presenterKlass) {
+        MetaClass proxyClass =
+                parameterizedAs(ProxyImpl.class, typeParametersOf(presenterKlass));
+        return ObjectBuilder.newInstanceOf(proxyClass).extend(presenterKlass);
     }
 }

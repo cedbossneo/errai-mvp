@@ -45,9 +45,8 @@ public class ProxyManager {
     static Map<Class<? extends Presenter<?>>, Proxy> proxies = new HashMap<Class<? extends Presenter<?>>, Proxy>();
     static Map<Class<? extends Presenter<?>>, ProxyPlace> proxiesPlaces = new HashMap<Class<? extends Presenter<?>>, ProxyPlace>();
 
-    public static <P extends Presenter<?>> void registerProxy(Class<P> presenterClass){
-        DefferedProxyImpl<P> defferedProxy = new DefferedProxyImpl<P>(presenterClass);
-        defferedProxies.add(defferedProxy);
+    public static <P extends Presenter<?>> void registerProxy(Proxy<P> proxy, Class<P> presenterClass){
+        proxies.put(presenterClass, proxy);
     }
 
     public static <P extends Presenter<?>> void registerHandler(GwtEvent.Type type, Class<P> presenterClass){
@@ -75,10 +74,7 @@ public class ProxyManager {
         instance = this;
         for (DefferedProxy defferedProxy : defferedProxies){
             Proxy value = defferedProxy.makeProxy(eventBus, placeManager);
-            if (value instanceof ProxyPlace)
-                proxiesPlaces.put(defferedProxy.getPresenterClass(), (ProxyPlace) value);
-            else
-                proxies.put(defferedProxy.getPresenterClass(), value);
+            proxiesPlaces.put(defferedProxy.getPresenterClass(), (ProxyPlace) value);
         }
         for (DefferedHandler defferedHandler : defferedHandlers){
             defferedHandler.registerHandler(eventBus, placeManager);
