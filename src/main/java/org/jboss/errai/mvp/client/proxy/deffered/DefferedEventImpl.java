@@ -2,7 +2,6 @@ package org.jboss.errai.mvp.client.proxy.deffered;
 
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
-import org.jboss.errai.mvp.client.events.LazyEventBus;
 import org.jboss.errai.mvp.client.places.PlaceManager;
 import org.jboss.errai.mvp.client.presenters.Presenter;
 import org.jboss.errai.mvp.client.proxy.Proxy;
@@ -24,17 +23,17 @@ import org.jboss.errai.mvp.client.proxy.ProxyManager;
  */
 public class DefferedEventImpl<P extends Presenter<?>> implements DefferedEvent<P> {
     private final Class<P> presenterClass;
-    private final Class<? extends Event> event;
+    private final Event.Type type;
 
-    public DefferedEventImpl(Class<? extends Event> event, Class<P> presenterClass) {
-        this.event = event;
+    public DefferedEventImpl(Event.Type type, Class<P> presenterClass) {
+        this.type = type;
         this.presenterClass = presenterClass;
     }
 
     @Override
     public void registerEvent(EventBus eventBus, PlaceManager placeManager) {
         Proxy<P> proxy = ProxyManager.getPresenterProxy(presenterClass);
-        ((LazyEventBus)eventBus).registerProxyEvent(event, proxy);
+        eventBus.addHandler(type, proxy);
     }
 
     @Override

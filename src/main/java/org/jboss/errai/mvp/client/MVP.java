@@ -7,7 +7,7 @@ package org.jboss.errai.mvp.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.web.bindery.event.shared.EventBus;
-import org.jboss.errai.mvp.client.events.LazyEventBus;
+import com.google.web.bindery.event.shared.SimpleEventBus;
 import org.jboss.errai.mvp.client.places.PlaceManager;
 import org.jboss.errai.mvp.client.places.PlaceManagerImpl;
 import org.jboss.errai.mvp.client.places.PlaceRequest;
@@ -32,7 +32,7 @@ public class MVP {
     @Produces
     private EventBus produceEventBus(){
         if (eventBus == null)
-            eventBus = GWT.create(LazyEventBus.class);
+            eventBus = GWT.create(SimpleEventBus.class);
         return eventBus;
     }
 

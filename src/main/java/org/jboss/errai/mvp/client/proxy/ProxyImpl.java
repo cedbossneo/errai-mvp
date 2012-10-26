@@ -34,8 +34,7 @@ public class ProxyImpl<P extends Presenter<?>> implements Proxy<P> {
     /**
    * Creates a Proxy class for a specific presenter.
    */
-  public ProxyImpl(EventBus eventBus, Class<P> presenterClass) {
-      this.eventBus = eventBus;
+  public ProxyImpl(Class<P> presenterClass) {
       this.presenterClass = presenterClass;
   }
 
@@ -55,4 +54,8 @@ public class ProxyImpl<P extends Presenter<?>> implements Proxy<P> {
   public final EventBus getEventBus() {
     return eventBus;
   }
+
+    public void setEventBus(EventBus eventBus) {
+        this.eventBus = eventBus;
+    }
 }
