@@ -59,7 +59,7 @@ public class ProxyManagerIOCExtension implements IOCExtensionConfigurator {
                 else
                     instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerEvent", Stmt.invokeStatic(event.getType(), staticMethod.getName()), klass));
             }
-            instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerProxy", Stmt.nestedCall(proxy.finish()), klass));
+            instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerProxy", proxy.finish(), klass));
             for (MetaMethod method : klass.getMethodsAnnotatedWith(ContentSlot.class)) {
                 if (!method.isStatic())
                     continue;
@@ -112,7 +112,8 @@ public class ProxyManagerIOCExtension implements IOCExtensionConfigurator {
     private AnonymousClassStructureBuilder createMethod(InjectionContext injectionContext, MetaClass handler, MetaClass klass, AnonymousClassStructureBuilder proxy, MetaClass returnType, String name, MetaParameter event) {
         Parameter parameter = Parameter.of(event.getType(), "event", true);
         MetaClass metaClass = parameterizedAs(NotifyingAsyncCallback.class, typeParametersOf(klass));
-        proxy.getClassDefinition().addInterface(handler);
+        if (!proxy.getClassDefinition().isAssignableTo(handler))
+            proxy.getClassDefinition().addInterface(handler);
         return proxy.publicMethod(returnType, name, parameter).body()
                 .append(
                         InjectUtil.invokePublicOrPrivateMethod(injectionContext, Stmt.loadVariable("this"),
