@@ -7,8 +7,11 @@ package org.jboss.errai.mvp.rebind.ioc;
 
 
 import org.jboss.errai.codegen.BlockStatement;
+import org.jboss.errai.codegen.InnerClass;
 import org.jboss.errai.codegen.Parameter;
-import org.jboss.errai.codegen.builder.AnonymousClassStructureBuilder;
+import org.jboss.errai.codegen.builder.ClassDefinitionBuilderAbstractOption;
+import org.jboss.errai.codegen.builder.ClassStructureBuilder;
+import org.jboss.errai.codegen.builder.impl.ClassBuilder;
 import org.jboss.errai.codegen.builder.impl.ObjectBuilder;
 import org.jboss.errai.codegen.meta.MetaClass;
 import org.jboss.errai.codegen.meta.MetaMethod;
@@ -49,17 +52,18 @@ public class ProxyManagerIOCExtension implements IOCExtensionConfigurator {
         final BlockStatement instanceInitializer = context.getBootstrapClass().getInstanceInitializer();
 
         for (MetaClass klass : ClassScanner.getTypesAnnotatedWith(ProxyClass.class)) {
-            AnonymousClassStructureBuilder proxy = createProxy(klass);
+            ClassDefinitionBuilderAbstractOption<? extends ClassStructureBuilder<?>> proxy = createProxy(klass);
             for (MetaMethod method : klass.getMethodsAnnotatedWith(ProxyEvent.class)) {
                 MetaParameter event = method.getParameters()[0];
-                proxy = createMethod(injectionContext, getHandler(klass, method.getName(), event.getType()), klass, proxy, method.getReturnType(), method.getName(), event);
+                createMethod(injectionContext, getHandler(klass, method.getName(), event.getType()), klass, proxy, method.getReturnType(), method.getName(), event);
                 MetaMethod staticMethod = event.getType().getBestMatchingStaticMethod("getType", new Class[]{});
                 if (staticMethod == null)
                     instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerEvent", InjectUtil.invokePublicOrPrivateMethod(injectionContext, Stmt.newObject(event.getType()), event.getType().getBestMatchingMethod("getAssociatedType", new Class[]{})), klass));
                 else
                     instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerEvent", Stmt.invokeStatic(event.getType(), staticMethod.getName()), klass));
             }
-            instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerProxy", proxy.finish(), klass));
+            context.getBootstrapClass().addInnerClass(new InnerClass(proxy.body().getClassDefinition()));
+            instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerProxy", Stmt.newObject(proxy.body().getClassDefinition(), klass), klass));
             for (MetaMethod method : klass.getMethodsAnnotatedWith(ContentSlot.class)) {
                 if (!method.isStatic())
                     continue;
@@ -109,30 +113,28 @@ public class ProxyManagerIOCExtension implements IOCExtensionConfigurator {
                             });
                         }
                     })*/
-    private AnonymousClassStructureBuilder createMethod(InjectionContext injectionContext, MetaClass handler, MetaClass klass, AnonymousClassStructureBuilder proxy, MetaClass returnType, String name, MetaParameter event) {
+    private ClassStructureBuilder<?> createMethod(InjectionContext injectionContext, MetaClass handler, MetaClass klass, ClassDefinitionBuilderAbstractOption<? extends ClassStructureBuilder<?>> proxy, MetaClass returnType, String name, MetaParameter event) {
         Parameter parameter = Parameter.of(event.getType(), "event", true);
         MetaClass metaClass = parameterizedAs(NotifyingAsyncCallback.class, typeParametersOf(klass));
-        if (!proxy.getClassDefinition().isAssignableTo(handler))
-            proxy.getClassDefinition().addInterface(handler);
-        return proxy.publicMethod(returnType, name, parameter).body()
+        proxy.implementsInterface(handler);
+        return proxy.body().publicMethod(returnType, name, parameter).body()
                 .append(
                         InjectUtil.invokePublicOrPrivateMethod(injectionContext, Stmt.loadVariable("this"),
-                                proxy.getClassDefinition().getBestMatchingMethod("getPresenter", metaClass),
+                                proxy.body().getClassDefinition().getBestMatchingMethod("getPresenter", metaClass),
                                 createCallback(metaClass, klass, proxy, name, parameter))
                 ).finish();
     }
 
-    private ObjectBuilder createCallback(MetaClass callbackClass, MetaClass presenterKlass, AnonymousClassStructureBuilder proxy, String name, Parameter parameter) {
+    private ObjectBuilder createCallback(MetaClass callbackClass, MetaClass presenterKlass, ClassDefinitionBuilderAbstractOption<? extends ClassStructureBuilder<?>> proxy, String name, Parameter parameter) {
         Parameter presenter = Parameter.of(presenterKlass, "presenter", true);
         return Stmt.newObject(callbackClass).extend(Stmt.loadVariable("this").invoke("getEventBus")).publicOverridesMethod("success", presenter).append(Stmt.loadVariable(presenter.getName()).invoke(name, Refs.get(parameter.getName()))).finish().finish();
     }
 
-    private AnonymousClassStructureBuilder createProxy(MetaClass presenterKlass) {
+    private ClassDefinitionBuilderAbstractOption<? extends ClassStructureBuilder<?>> createProxy(MetaClass presenterKlass) {
         MetaClass proxyClass =
                 parameterizedAs(ProxyImpl.class, typeParametersOf(presenterKlass));
-        AnonymousClassStructureBuilder extend = Stmt.newObject(proxyClass).extend(presenterKlass);
-        extend.getClassDefinition().setStatic(true);
-        extend.getClassDefinition().setFinal(true);
-        return extend;
+        ClassDefinitionBuilderAbstractOption<? extends ClassStructureBuilder<?>> definitionStaticOption = ClassBuilder.define("org.jboss.errai.ioc.client.BootstrapperImpl." + presenterKlass.getName() + "Proxy", proxyClass).publicScope().staticClass();
+        definitionStaticOption.body().publicConstructor(Parameter.of(parameterizedAs(Class.class, typeParametersOf(presenterKlass)), "presenterClass")).callSuper(Refs.get("presenterClass")).finish();
+        return definitionStaticOption;
     }
 }
