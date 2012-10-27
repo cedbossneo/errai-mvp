@@ -47,8 +47,8 @@ public class NonLeafTabContentProxyImpl<T extends Presenter<?>> extends ProxyImp
    * proxy hold information that can be displayed on the tab together with the target history
    * token of the leaf page to display when the tab is clicked.
    */
-    public NonLeafTabContentProxyImpl(EventBus eventBus, Class<T> presenterClass) {
-        super(eventBus, presenterClass);
+    public NonLeafTabContentProxyImpl(Class<T> presenterClass) {
+        super(presenterClass);
     }
 
     @Override
