@@ -1,3 +1,8 @@
+/*
+ * Errai-MVP, inspired by GWT-Platform for the Errai Framework
+ * Copyright : Cedric Hauber (cedbossneo) 2012.
+ */
+
 package org.jboss.errai.mvp.client.proxy;
 
 import com.google.gwt.event.shared.GwtEvent;
@@ -20,11 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Cedric
+ * Created by Cedric Hauber (cedbossneo)
  * Date: 10/21/12
  * Time: 11:55 PM
- * To change this template use File | Settings | File Templates.
  */
 @ApplicationScoped
 public class ProxyManager {

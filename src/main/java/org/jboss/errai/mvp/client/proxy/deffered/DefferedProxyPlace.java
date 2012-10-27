@@ -1,3 +1,8 @@
+/*
+ * Errai-MVP, inspired by GWT-Platform for the Errai Framework
+ * Copyright : Cedric Hauber (cedbossneo) 2012.
+ */
+
 package org.jboss.errai.mvp.client.proxy.deffered;
 
 import com.google.web.bindery.event.shared.EventBus;
