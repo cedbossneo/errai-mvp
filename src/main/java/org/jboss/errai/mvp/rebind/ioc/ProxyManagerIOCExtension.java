@@ -50,7 +50,6 @@ public class ProxyManagerIOCExtension implements IOCExtensionConfigurator {
     @Override
     public void afterInitialization(IOCProcessingContext context, InjectionContext injectionContext, IOCProcessorFactory procFactory) {
         final BlockStatement instanceInitializer = context.getBootstrapClass().getInstanceInitializer();
-
         for (MetaClass klass : ClassScanner.getTypesAnnotatedWith(ProxyClass.class)) {
             ClassDefinitionBuilderAbstractOption<? extends ClassStructureBuilder<?>> proxy = createProxy(klass);
             for (MetaMethod method : klass.getMethodsAnnotatedWith(ProxyEvent.class)) {

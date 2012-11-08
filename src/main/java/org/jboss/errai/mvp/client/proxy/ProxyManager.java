@@ -17,8 +17,8 @@ import org.jboss.errai.mvp.client.presenters.Presenter;
 import org.jboss.errai.mvp.client.proxy.deffered.*;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +29,7 @@ import java.util.Map;
  * Date: 10/21/12
  * Time: 11:55 PM
  */
-@ApplicationScoped
+@Singleton
 public class ProxyManager {
     @Inject
     private IOCBeanManager manager;

@@ -15,8 +15,11 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+import org.jboss.errai.mvp.client.annotations.DefaultPlace;
 import org.jboss.errai.mvp.client.events.*;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +29,8 @@ import java.util.List;
  * @author Philippe Beaudoin
  * @author Christian Goudreau
  */
-public abstract class PlaceManagerImpl implements PlaceManager,
+@Singleton
+public class PlaceManagerImpl implements PlaceManager,
     ValueChangeHandler<String>, ClosingHandler {
 
   private final EventBus eventBus;
@@ -37,14 +41,18 @@ public abstract class PlaceManagerImpl implements PlaceManager,
   private List<PlaceRequest> placeHierarchy = new ArrayList<PlaceRequest>();
 
   private final TokenFormatter tokenFormatter;
+    private String defaultPlace;
 
-  private HandlerRegistration windowClosingHandlerRegistration;
+    private HandlerRegistration windowClosingHandlerRegistration;
   private boolean locked;
   private Command defferedNavigation;
 
-  public PlaceManagerImpl(EventBus eventBus, TokenFormatter tokenFormatter) {
+
+  @Inject
+  public PlaceManagerImpl(EventBus eventBus, TokenFormatter tokenFormatter, @DefaultPlace String defaultPlace) {
       this.eventBus = eventBus;
       this.tokenFormatter = tokenFormatter;
+      this.defaultPlace = defaultPlace;
       registerTowardsHistory();
   }
 
@@ -300,7 +308,12 @@ public abstract class PlaceManagerImpl implements PlaceManager,
     History.fireCurrentHistoryState();
   }
 
-  @Override
+    @Override
+    public void revealDefaultPlace() {
+        revealPlace(new PlaceRequest(defaultPlace));
+    }
+
+    @Override
   public void revealErrorPlace(String invalidHistoryToken) {
     revealDefaultPlace();
   }
