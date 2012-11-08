@@ -24,6 +24,7 @@ import org.jboss.errai.mvp.client.annotations.GaAccount;
 import org.jboss.errai.mvp.client.events.NavigationEvent;
 import org.jboss.errai.mvp.client.events.NavigationHandler;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 /**
@@ -39,6 +40,7 @@ import javax.inject.Inject;
  *
  * @author Christian Goudreau
  */
+@ApplicationScoped
 public class GoogleAnalyticsNavigationTracker implements NavigationHandler {
   private final GoogleAnalytics analytics;
 
