@@ -94,7 +94,12 @@ public class ProxyPlaceAbstract<P extends Presenter<?>, Proxy_ extends Proxy<P>>
     proxy.getPresenter(callback);
   }
 
-  @Override
+    @Override
+    public Class<P> getPresenterClass() {
+        return proxy.getPresenterClass();
+    }
+
+    @Override
   public final int hashCode() {
     return place.hashCode();
   }

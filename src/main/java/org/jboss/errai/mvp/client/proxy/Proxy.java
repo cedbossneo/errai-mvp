@@ -55,4 +55,6 @@ public interface Proxy<P extends Presenter<?>> extends HasHandlers {
    *          as a parameter.
    */
   void getPresenter(NotifyingAsyncCallback<P> callback);
+
+  public Class<P> getPresenterClass();
 }

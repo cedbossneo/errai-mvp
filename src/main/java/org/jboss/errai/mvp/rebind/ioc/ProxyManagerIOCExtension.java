@@ -73,7 +73,7 @@ public class ProxyManagerIOCExtension implements IOCExtensionConfigurator {
                     instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerEvent", Stmt.invokeStatic(event.getType(), staticMethod.getName()), klass));
             }
             context.getBootstrapClass().addInnerClass(new InnerClass(proxy.body().getClassDefinition()));
-            instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerProxy", Stmt.newObject(proxy.body().getClassDefinition(), klass), klass));
+            instanceInitializer.addStatement(Stmt.invokeStatic(ProxyManager.class, "registerProxy", Stmt.newObject(proxy.body().getClassDefinition(), klass)));
             for (MetaMethod method : klass.getMethodsAnnotatedWith(ContentSlot.class)) {
                 if (!method.isStatic())
                     continue;

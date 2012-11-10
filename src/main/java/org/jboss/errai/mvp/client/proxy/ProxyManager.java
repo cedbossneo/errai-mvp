@@ -59,46 +59,74 @@ public class ProxyManager {
     static Map<Class<? extends Presenter<?>>, Proxy> proxies = new HashMap<Class<? extends Presenter<?>>, Proxy>();
     static Map<Class<? extends Presenter<?>>, ProxyPlace> proxiesPlaces = new HashMap<Class<? extends Presenter<?>>, ProxyPlace>();
 
-    public static <P extends Presenter<?>> void registerProxy(ProxyImpl<P> proxy, Class<P> presenterClass){
-        defferedProxies.add(new DefferedProxyImpl<P>(proxy, presenterClass));
+    public static <P extends Presenter<?>> DefferedProxyImpl<P> registerProxy(ProxyImpl<P> proxy){
+        DefferedProxyImpl<P> e = new DefferedProxyImpl<P>(proxy, proxy.getPresenterClass());
+        defferedProxies.add(e);
+        if (instance != null)
+            instance.registerDefferedProxy(e);
+        return e;
     }
 
-    public static <P extends Presenter<?>> void registerHandler(GwtEvent.Type type, Class<P> presenterClass){
+    public static <P extends Presenter<?>> DefferedContentHandler<P> registerHandler(GwtEvent.Type type, Class<P> presenterClass){
         DefferedContentHandler<P> handler = new DefferedContentHandler<P>(type, presenterClass);
         defferedHandlers.add(handler);
+        if (instance != null)
+            instance.registerDefferedHandler(handler);
+        return handler;
     }
 
-    public static <P extends Presenter<?>> void registerEvent(Event.Type type, Class<P> presenterClass){
+    public static <P extends Presenter<?>> DefferedEventImpl<P> registerEvent(Event.Type type, Class<P> presenterClass){
         DefferedEventImpl<P> defferedEvent = new DefferedEventImpl<P>(type, presenterClass);
         defferedEvents.add(defferedEvent);
+        if (instance != null)
+            instance.registerDefferedEvent(defferedEvent);
+        return defferedEvent;
     }
 
-    public static <P extends Presenter<?>> void registerPlace(String token, Class<P> presenterClass){
+    public static <P extends Presenter<?>> DefferedProxyPlace<P> registerPlace(String token, Class<P> presenterClass){
         DefferedProxyPlace<P> proxyPlace = new DefferedProxyPlace<P>(token, presenterClass);
         defferedProxies.add(proxyPlace);
+        if (instance != null)
+            instance.registerDefferedProxy(proxyPlace);
+        return proxyPlace;
     }
 
-    public static <P extends Presenter<?>> void registerPlace(String token, Class<P> presenterClass, Class<? extends Gatekeeper> gateKeeper){
+    public static <P extends Presenter<?>> DefferedGateKeeperProxyPlace<P> registerPlace(String token, Class<P> presenterClass, Class<? extends Gatekeeper> gateKeeper){
         DefferedGateKeeperProxyPlace<P> proxyPlace = new DefferedGateKeeperProxyPlace<P>(token, presenterClass, gateKeeper);
         defferedProxies.add(proxyPlace);
+        if (instance != null)
+            instance.registerDefferedProxy(proxyPlace);
+        return proxyPlace;
     }
 
     @PostConstruct
     public void init(){
         instance = this;
         for (DefferedProxy defferedProxy : defferedProxies){
-            Proxy value = defferedProxy.makeProxy(eventBus, placeManager);
-            if (value instanceof ProxyPlace)
-                proxiesPlaces.put(defferedProxy.getPresenterClass(), (ProxyPlace) value);
-            else
-                proxies.put(defferedProxy.getPresenterClass(), value);
+            registerDefferedProxy(defferedProxy);
         }
         for (DefferedHandler defferedHandler : defferedHandlers){
-            defferedHandler.registerHandler(eventBus, placeManager);
+            registerDefferedHandler(defferedHandler);
         }
         for (DefferedEvent defferedEvent : defferedEvents){
-            defferedEvent.registerEvent(eventBus, placeManager);
+            registerDefferedEvent(defferedEvent);
         }
+    }
+
+    protected void registerDefferedEvent(DefferedEvent defferedEvent) {
+        defferedEvent.registerEvent(eventBus, placeManager);
+    }
+
+    protected void registerDefferedHandler(DefferedHandler defferedHandler) {
+        defferedHandler.registerHandler(eventBus, placeManager);
+    }
+
+    protected void registerDefferedProxy(DefferedProxy defferedProxy) {
+        Proxy value = defferedProxy.makeProxy(eventBus, placeManager);
+        if (value instanceof ProxyPlace)
+            proxiesPlaces.put(defferedProxy.getPresenterClass(), (ProxyPlace) value);
+        else
+            proxies.put(defferedProxy.getPresenterClass(), value);
     }
 
     public static <P extends Presenter<?>> Proxy<P> getPresenterProxy(Class<P> presenterClass){
